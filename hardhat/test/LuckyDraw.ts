@@ -8,18 +8,15 @@ describe("LuckyDraw", function () {
   // We use loadFixture to run this setup once, snapshot that state,
   // and reset Hardhat Network to that snapshot in every test.
   async function deployLuckyDrawContractFixture() {
-    const [owner] = await ethers.getSigners();
-
     const factory = await ethers.getContractFactory("LuckyDraw");
     const contract = await factory.deploy();
-
-    return { contract, owner }
+    return { contract }
   }
 
   describe("Deployment", function () {
-    it("Should set the right owner", async function () {
-      const { contract, owner } = await loadFixture(deployLuckyDrawContractFixture);
-      expect(await contract.owner()).to.equal(owner.address);
+    it("Should set the right balance", async function () {
+      const { contract } = await loadFixture(deployLuckyDrawContractFixture);
+      expect(await contract.balance()).to.equal(0);
     })
   })
 })
