@@ -14,6 +14,11 @@ describe("LuckyDraw", function () {
   }
 
   describe("Deployment", function () {
+    it("Contract should have an address", async function () {
+      const { contract } = await loadFixture(deployLuckyDrawContractFixture);
+      expect(contract.address).to.not.be.equal("");
+    })
+
     it("Should set the right balance", async function () {
       const { contract } = await loadFixture(deployLuckyDrawContractFixture);
       expect(await contract.balance()).to.equal(0);
