@@ -15,4 +15,10 @@ contract LuckyDraw {
     function isWinningCall() public view returns (bool) {
         return generateRandomNumber() % 2 == 0;
     }
+
+    function draw() public {
+        if (!isWinningCall()) {
+            balance += 1;
+        }
+    }
 }

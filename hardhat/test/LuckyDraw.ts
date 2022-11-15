@@ -30,5 +30,15 @@ describe("LuckyDraw", function () {
       const { contract } = await loadFixture(deployLuckyDrawContractFixture);
       expect([true, false]).to.contain(await contract.isWinningCall());
     })
+
+    it("Draw adds 1 or stays at 0 if initial state is 0", async function () {
+      const { contract } = await loadFixture(deployLuckyDrawContractFixture);
+
+      const txn = await contract.draw();
+      await txn.wait();
+
+      const balance = await contract.balance();
+      expect([1, 0]).to.contain(balance.toNumber());
+    })
   })
 })
