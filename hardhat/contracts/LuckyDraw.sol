@@ -16,9 +16,13 @@ contract LuckyDraw {
         return generateRandomNumber() % 2 == 0;
     }
 
+    function takeMoneyFromWallet() private {
+        balance += 1;
+    }
+
     function draw() public {
         if (!isWinningCall()) {
-            balance += 1;
+            takeMoneyFromWallet();
         }
     }
 }
