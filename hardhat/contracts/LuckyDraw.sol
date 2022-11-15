@@ -12,7 +12,7 @@ contract LuckyDraw {
         return uint(keccak256(abi.encodePacked(msg.sender, block.difficulty)));
     }
 
-    function isWinningCall() public view returns (bool) {
+    function isWinningCall() private view returns (bool) {
         return generateRandomNumber() % 2 == 0;
     }
 

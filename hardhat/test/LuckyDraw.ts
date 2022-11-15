@@ -26,11 +26,6 @@ describe("LuckyDraw", function () {
   })
 
   describe("Functionality", function () {
-    it("Call is either winner or loser", async function () {
-      const { contract } = await loadFixture(deployLuckyDrawContractFixture);
-      expect([true, false]).to.contain(await contract.isWinningCall());
-    })
-
     it("Draw adds 1 or stays at 0 if initial state is 0", async function () {
       const { contract } = await loadFixture(deployLuckyDrawContractFixture);
 
