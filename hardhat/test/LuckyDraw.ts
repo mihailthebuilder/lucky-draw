@@ -14,7 +14,7 @@ describe("LuckyDraw", function () {
   }
 
   describe("Deployment", function () {
-    it("Contract should have an address", async function () {
+    it("Should have an address", async function () {
       const { contract } = await loadFixture(deployLuckyDrawContractFixture);
       expect(contract.address).to.not.be.equal("");
     })
@@ -22,6 +22,13 @@ describe("LuckyDraw", function () {
     it("Should set the right balance", async function () {
       const { contract } = await loadFixture(deployLuckyDrawContractFixture);
       expect(await contract.balance()).to.equal(0);
+    })
+  })
+
+  describe("Functionality", function () {
+    it("Call is either winner or loser", async function () {
+      const { contract } = await loadFixture(deployLuckyDrawContractFixture);
+      expect([true, false]).to.contain(await contract.isWinningCall());
     })
   })
 })
