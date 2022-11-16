@@ -29,19 +29,19 @@ contract LuckyDraw {
         return generateRandomNumber() % 2 == 0;
     }
 
-    function takeMoneyFromWallet() private {
+    function withdrawFromWallet() private {
         balance += 1;
     }
 
-    function takeMoneyFromBalance() private {
+    function withdrawFromBalance() private {
         balance -= 1;
     }
 
     function draw() public {
         if (isWinningCall()) {
-            takeMoneyFromBalance();
+            withdrawFromBalance();
         } else {
-            takeMoneyFromWallet();
+            withdrawFromWallet();
         }
     }
 }
