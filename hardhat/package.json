@@ -1,7 +1,7 @@
 {
   "scripts": {
     "test": "hardhat test test/LuckyDraw.ts",
-    "start-server": "hardhat node"
+    "start-network": "hardhat node"
   },
   "devDependencies": {
     "@ethersproject/abi": "^5.4.7",
