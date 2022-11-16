@@ -7,6 +7,10 @@ import "hardhat/console.sol";
 contract LuckyDraw {
     uint public balance;
 
+    constructor(uint initialBalance) {
+        balance = initialBalance;
+    }
+
     // not safe - https://stackoverflow.com/a/52472278/7874516
     function generateRandomNumber() private view returns (uint) {
         return uint(keccak256(abi.encodePacked(msg.sender, block.difficulty)));
