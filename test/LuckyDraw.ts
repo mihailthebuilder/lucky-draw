@@ -22,11 +22,6 @@ describe("LuckyDraw", function () {
   }
 
   describe("Deployment", function () {
-    it("Should have an address", async function () {
-      const { contract } = await deployContractFixtureWith0Balance();
-      expect(contract.address).to.not.be.equal("");
-    })
-
     it("Should set the balance of 0", async function () {
       const { contract } = await deployContractFixtureWith0Balance();
       expect(await contract.balance()).to.equal(0);
