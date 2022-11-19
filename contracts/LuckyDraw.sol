@@ -29,7 +29,7 @@ contract LuckyDraw {
         return generateRandomNumber() % 2 == 0;
     }
 
-    function withdrawFromWallet() private {
+    function addToBalance() private {
         balance += 1;
     }
 
@@ -39,9 +39,11 @@ contract LuckyDraw {
 
     function draw() public {
         if (isWinningCall()) {
+            require(balance >= 1, "Insufficient funds in contract");
+
             withdrawFromBalance();
         } else {
-            withdrawFromWallet();
+            addToBalance();
         }
     }
 }

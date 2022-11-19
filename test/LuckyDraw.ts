@@ -1,5 +1,12 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
+import { CustomError } from "hardhat/internal/hardhat-network/stack-traces/model";
+
+type ContractError = {
+  code: string;
+  message: string;
+  reason: string;
+}
 
 describe("LuckyDraw", function () {
   async function deployContractFixtureWith0Balance() {
@@ -35,8 +42,15 @@ describe("LuckyDraw", function () {
     it("Draw adds 1 or stays at 0 if balance is 0", async function () {
       const { contract } = await deployContractFixtureWith0Balance();
 
-      const txn = await contract.draw();
-      await txn.wait();
+      try {
+        const txn = await contract.draw();
+        await txn.wait();
+      } catch (err) {
+        const errorCode = (err as ContractError).code;
+        if (errorCode !== "INSUFFICIENT_FUNDS") {
+          throw err;
+        }
+      }
 
       const balance = await contract.balance();
       expect([1, 0]).to.contain(balance.toNumber());
