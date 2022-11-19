@@ -8,6 +8,7 @@ contract LuckyDraw {
     uint public balance;
 
     constructor(uint startingBalance) {
+        require(startingBalance > 0, "Starting balance must be greater than 0");
         balance = startingBalance;
     }
 

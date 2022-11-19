@@ -14,9 +14,16 @@ describe("LuckyDraw", function () {
   }
 
   describe("Deployment", function () {
-    it("Should set the balance of 0", async function () {
-      const { contract } = await deployContractFixture(0);
-      expect(await contract.balance()).to.equal(0);
+    it("Can't set a balance of 0", async function () {
+      let errorMessage = "";
+
+      try {
+        await deployContractFixture(0);
+      } catch (err) {
+        errorMessage = (err as ContractError).message;
+      }
+
+      expect(errorMessage.includes("Starting balance must be greater than 0")).to.be.true;
     })
 
     it("Should set the balance of 10", async function () {
@@ -26,9 +33,24 @@ describe("LuckyDraw", function () {
   })
 
   describe("Functionality", function () {
-    it("Draw adds 1 or stays at 0 if balance is 0", async function () {
-      const { contract } = await deployContractFixture(0);
+    it("Draw adds 1 or reduces by 1 if balance is 10", async function () {
+      const { contract } = await deployContractFixture(10);
 
+      const txn = await contract.draw();
+      await txn.wait();
+
+      const balance = await contract.balance();
+      expect([9, 11]).to.contain(balance.toNumber());
+    })
+
+    it("Given a starting balance of 1, when draw is called 2 times, the end balance is 0, 1, 2, or 3", async function () {
+      const { contract } = await deployContractFixture(1);
+
+      // balance either decreases to 0, or increases to 2
+      const txn = await contract.draw();
+      await txn.wait();
+
+      // 2nd call might be reverted if the balance is 0
       try {
         const txn = await contract.draw();
         await txn.wait();
@@ -40,17 +62,21 @@ describe("LuckyDraw", function () {
       }
 
       const balance = await contract.balance();
-      expect([1, 0]).to.contain(balance.toNumber());
+      expect([0, 1, 2, 3]).to.contain(balance.toNumber());
     })
 
-    it("Draw adds 1 or reduces by 1 if balance is 10", async function () {
+    it("Given a starting balance of 10, when draw is called 2 times, the end balance is 8, 9, 10, 11, or 12", async function () {
       const { contract } = await deployContractFixture(10);
 
-      const txn = await contract.draw();
+      let txn = await contract.draw();
+      await txn.wait();
+
+      // no error is expected as balance will remain greater than 0
+      txn = await contract.draw();
       await txn.wait();
 
       const balance = await contract.balance();
-      expect([9, 11]).to.contain(balance.toNumber());
+      expect([8, 9, 10, 11, 12]).to.contain(balance.toNumber());
     })
   })
 })
