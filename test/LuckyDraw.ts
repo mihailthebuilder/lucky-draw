@@ -1,11 +1,9 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import { CustomError } from "hardhat/internal/hardhat-network/stack-traces/model";
 
 type ContractError = {
   code: string;
   message: string;
-  reason: string;
 }
 
 describe("LuckyDraw", function () {
@@ -35,8 +33,8 @@ describe("LuckyDraw", function () {
         const txn = await contract.draw();
         await txn.wait();
       } catch (err) {
-        const errorCode = (err as ContractError).code;
-        if (errorCode !== "INSUFFICIENT_FUNDS") {
+        const errorMessage = (err as ContractError).message;
+        if (!errorMessage.includes("Insufficient balance in contract")) {
           throw err;
         }
       }

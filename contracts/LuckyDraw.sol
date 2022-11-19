@@ -7,8 +7,8 @@ import "hardhat/console.sol";
 contract LuckyDraw {
     uint public balance;
 
-    constructor(uint initialBalance) {
-        balance = initialBalance;
+    constructor(uint startingBalance) {
+        balance = startingBalance;
     }
 
     // not safe - https://stackoverflow.com/a/52472278/7874516
@@ -39,7 +39,7 @@ contract LuckyDraw {
 
     function draw() public {
         if (isWinningCall()) {
-            require(balance >= 1, "Insufficient funds in contract");
+            require(balance >= 1, "Insufficient balance in contract");
 
             withdrawFromBalance();
         } else {
