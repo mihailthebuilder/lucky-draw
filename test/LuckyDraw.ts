@@ -9,33 +9,27 @@ type ContractError = {
 }
 
 describe("LuckyDraw", function () {
-  async function deployContractFixtureWith0Balance() {
+  async function deployContractFixture(initialBalance: number) {
     const factory = await ethers.getContractFactory("LuckyDraw");
-    const contract = await factory.deploy(0);
-    return { contract }
-  }
-
-  async function deployContractFixtureWith10Balance() {
-    const factory = await ethers.getContractFactory("LuckyDraw");
-    const contract = await factory.deploy(10);
+    const contract = await factory.deploy(initialBalance);
     return { contract }
   }
 
   describe("Deployment", function () {
     it("Should set the balance of 0", async function () {
-      const { contract } = await deployContractFixtureWith0Balance();
+      const { contract } = await deployContractFixture(0);
       expect(await contract.balance()).to.equal(0);
     })
 
     it("Should set the balance of 10", async function () {
-      const { contract } = await deployContractFixtureWith10Balance();
+      const { contract } = await deployContractFixture(10);
       expect(await contract.balance()).to.equal(10);
     })
   })
 
   describe("Functionality", function () {
     it("Draw adds 1 or stays at 0 if balance is 0", async function () {
-      const { contract } = await deployContractFixtureWith0Balance();
+      const { contract } = await deployContractFixture(0);
 
       try {
         const txn = await contract.draw();
@@ -52,7 +46,7 @@ describe("LuckyDraw", function () {
     })
 
     it("Draw adds 1 or reduces by 1 if balance is 10", async function () {
-      const { contract } = await deployContractFixtureWith10Balance();
+      const { contract } = await deployContractFixture(10);
 
       const txn = await contract.draw();
       await txn.wait();
