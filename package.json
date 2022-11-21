@@ -2,7 +2,8 @@
   "scripts": {
     "test": "hardhat test test/LuckyDraw.ts",
     "start-network": "hardhat node",
-    "deploy": "hardhat run scripts/deploy.ts --network localhost"
+    "deploy:localhost": "hardhat run scripts/deploy.ts --network localhost",
+    "deploy:goerli": "hardhat run scripts/deploy.ts --network goerli"
   },
   "devDependencies": {
     "@ethersproject/abi": "^5.4.7",
@@ -18,6 +19,7 @@
     "@types/mocha": "^9.1.0",
     "@types/node": ">=12.0.0",
     "chai": "^4.2.0",
+    "dotenv": "^16.0.3",
     "ethers": "^5.4.7",
     "hardhat": "^2.12.2",
     "hardhat-gas-reporter": "^1.0.8",
