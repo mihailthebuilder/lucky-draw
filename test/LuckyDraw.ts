@@ -33,14 +33,21 @@ describe("LuckyDraw", function () {
   })
 
   describe("Functionality", function () {
-    it("Draw adds 1 or reduces by 1 if balance is 10", async function () {
+    it("Given starting balance of 10, draw returns true if adds 1 or false if reduces by 1", async function () {
       const { contract } = await deployContractFixture(10);
 
-      const txn = await contract.draw();
-      await txn.wait();
+      const transaction = await contract.draw();
+      const transactionResult = await transaction.wait();
+      const eventsResultingFromTransaction = transactionResult.events;
 
-      const balance = await contract.balance();
-      expect([9, 11]).to.contain(balance.toNumber());
+      if (eventsResultingFromTransaction?.length != 1) {
+        throw "No events emitted"
+      }
+
+      const eventName = eventsResultingFromTransaction[0].event
+      const balance = (await contract.balance()).toNumber();
+
+      expect([balance, eventName]).to.be.deep.oneOf([[9, "won"], [11, "lost"]])
     })
 
     it("Given a starting balance of 1, when draw is called 2 times, the end balance is 0, 1, 2, or 3", async function () {
@@ -61,8 +68,8 @@ describe("LuckyDraw", function () {
         }
       }
 
-      const balance = await contract.balance();
-      expect([0, 1, 2, 3]).to.contain(balance.toNumber());
+      const balance = (await contract.balance()).toNumber();
+      expect(balance).to.be.oneOf([0, 1, 2, 3]);
     })
 
     it("Given a starting balance of 10, when draw is called 2 times, the end balance is 8, 9, 10, 11, or 12", async function () {
@@ -75,25 +82,8 @@ describe("LuckyDraw", function () {
       txn = await contract.draw();
       await txn.wait();
 
-      const balance = await contract.balance();
-      expect([8, 9, 10, 11, 12]).to.contain(balance.toNumber());
-    })
-
-    it("Given starting balance of 10, draw returns true if adds 1 or false if reduces by 1", async function () {
-      const { contract } = await deployContractFixture(10);
-
-      const transaction = await contract.draw();
-      const transactionResult = await transaction.wait();
-      const eventsResultingFromTransaction = transactionResult.events;
-
-      if (eventsResultingFromTransaction?.length != 1) {
-        throw "No events emitted"
-      }
-
-      const eventName = eventsResultingFromTransaction[0].event
       const balance = (await contract.balance()).toNumber();
-
-      expect([balance, eventName]).to.be.deep.oneOf([[9, "won"], [11, "lost"]])
+      expect(balance).to.be.oneOf([8, 9, 10, 11, 12]);
     })
   })
 })
