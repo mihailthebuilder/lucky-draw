@@ -78,5 +78,22 @@ describe("LuckyDraw", function () {
       const balance = await contract.balance();
       expect([8, 9, 10, 11, 12]).to.contain(balance.toNumber());
     })
+
+    it("Given starting balance of 10, draw returns true if adds 1 or false if reduces by 1", async function () {
+      const { contract } = await deployContractFixture(10);
+
+      const transaction = await contract.draw();
+      const transactionResult = await transaction.wait();
+      const eventsResultingFromTransaction = transactionResult.events;
+
+      if (eventsResultingFromTransaction?.length != 1) {
+        throw "No events emitted"
+      }
+
+      const eventName = eventsResultingFromTransaction[0].event
+      const balance = (await contract.balance()).toNumber();
+
+      expect([balance, eventName]).to.be.deep.oneOf([[9, "won"], [11, "lost"]])
+    })
   })
 })

@@ -41,10 +41,14 @@ contract LuckyDraw {
     function draw() public {
         if (isWinningCall()) {
             require(balance >= 1, "Insufficient balance in contract");
-
+            emit won();
             withdrawFromBalance();
         } else {
+            emit lost();
             addToBalance();
         }
     }
+
+    event won();
+    event lost();
 }
