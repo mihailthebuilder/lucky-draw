@@ -12,6 +12,21 @@ contract LuckyDraw {
         balance = startingBalance;
     }
 
+    function draw() public {
+        if (isWinningCall()) {
+            require(balance >= 1, "Insufficient balance in contract");
+            emit won();
+            withdrawFromBalance();
+        } else {
+            emit lost();
+            addToBalance();
+        }
+    }
+
+    function isWinningCall() private view returns (bool) {
+        return generateRandomNumber() % 2 == 0;
+    }
+
     // not safe - https://stackoverflow.com/a/52472278/7874516
     function generateRandomNumber() private view returns (uint) {
         return
@@ -26,27 +41,12 @@ contract LuckyDraw {
             );
     }
 
-    function isWinningCall() private view returns (bool) {
-        return generateRandomNumber() % 2 == 0;
-    }
-
     function addToBalance() private {
         balance += 1;
     }
 
     function withdrawFromBalance() private {
         balance -= 1;
-    }
-
-    function draw() public {
-        if (isWinningCall()) {
-            require(balance >= 1, "Insufficient balance in contract");
-            emit won();
-            withdrawFromBalance();
-        } else {
-            emit lost();
-            addToBalance();
-        }
     }
 
     event won();
