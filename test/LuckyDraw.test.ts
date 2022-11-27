@@ -32,7 +32,7 @@ describe("LuckyDraw", function () {
     })
   })
 
-  describe("Functionality", function () {
+  describe("Draw feature", function () {
     it("Given starting balance of 10, draw returns true if adds 1 or false if reduces by 1", async function () {
       const { contract } = await deployContractFixture(10);
 
@@ -72,18 +72,29 @@ describe("LuckyDraw", function () {
       expect(balance).to.be.oneOf([0, 1, 2, 3]);
     })
 
-    it("Given a starting balance of 10, when draw is called 2 times, the end balance is 8, 9, 10, 11, or 12", async function () {
+    it(
+      `Given a contract with a starting balance of 10,
+      when draw is called 2 times,
+      there are 2 won/lost events logged
+      and the end balance is 8, 9, 10, 11, or 12, depending on the outcome of those events
+      `, async function () {
       const { contract } = await deployContractFixture(10);
 
       let txn = await contract.draw();
       await txn.wait();
-
-      // no error is expected as balance will remain greater than 0
       txn = await contract.draw();
       await txn.wait();
 
+      const wonEventFilter = contract.filters.won()
+      const lostEventFilter = contract.filters.lost()
+
+      const wonEvents = await contract.queryFilter(wonEventFilter);
+      const lostEvents = await contract.queryFilter(lostEventFilter);
+
+      expect(wonEvents.length + lostEvents.length).to.equal(2);
+
       const balance = (await contract.balance()).toNumber();
-      expect(balance).to.be.oneOf([8, 9, 10, 11, 12]);
+      expect(balance).to.equal(10 + wonEvents.length - lostEvents.length);
     })
   })
 })
