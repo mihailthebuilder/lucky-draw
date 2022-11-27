@@ -33,22 +33,26 @@ describe("LuckyDraw", function () {
   })
 
   describe("Draw feature", function () {
-    it("Given starting balance of 10, draw returns true if adds 1 or false if reduces by 1", async function () {
-      const { contract } = await deployContractFixture(10);
+    it(
+      `Given starting balance of 10,
+      draw emits a "won" or "lost" event
+      and reduces the balance by 1 for a "won" event or increases the balance by 1 for a "lost" event`,
+      async function () {
+        const { contract } = await deployContractFixture(10);
 
-      const transaction = await contract.draw();
-      const transactionResult = await transaction.wait();
-      const eventsResultingFromTransaction = transactionResult.events;
+        const transaction = await contract.draw();
+        const transactionResult = await transaction.wait();
+        const eventsResultingFromTransaction = transactionResult.events;
 
-      if (eventsResultingFromTransaction?.length != 1) {
-        throw "No events emitted"
-      }
+        if (eventsResultingFromTransaction?.length != 1) {
+          throw "No events emitted"
+        }
 
-      const eventName = eventsResultingFromTransaction[0].event
-      const balance = (await contract.balance()).toNumber();
+        const eventName = eventsResultingFromTransaction[0].event
+        const balance = (await contract.balance()).toNumber();
 
-      expect([balance, eventName]).to.be.deep.oneOf([[9, "won"], [11, "lost"]])
-    })
+        expect([balance, eventName]).to.be.deep.oneOf([[9, "won"], [11, "lost"]])
+      })
 
     it("Given a starting balance of 1, when draw is called 2 times, the end balance is 0, 1, 2, or 3", async function () {
       const { contract } = await deployContractFixture(1);
@@ -76,25 +80,25 @@ describe("LuckyDraw", function () {
       `Given a contract with a starting balance of 10,
       when draw is called 2 times,
       there are 2 won/lost events logged
-      and the end balance is 8, 9, 10, 11, or 12, depending on the outcome of those events
-      `, async function () {
-      const { contract } = await deployContractFixture(10);
+      and the end balance is 8, 9, 10, 11, or 12, depending on the outcome of those events`,
+      async function () {
+        const { contract } = await deployContractFixture(10);
 
-      let txn = await contract.draw();
-      await txn.wait();
-      txn = await contract.draw();
-      await txn.wait();
+        let txn = await contract.draw();
+        await txn.wait();
+        txn = await contract.draw();
+        await txn.wait();
 
-      const wonEventFilter = contract.filters.won()
-      const lostEventFilter = contract.filters.lost()
+        const wonEventFilter = contract.filters.won()
+        const lostEventFilter = contract.filters.lost()
 
-      const wonEvents = await contract.queryFilter(wonEventFilter);
-      const lostEvents = await contract.queryFilter(lostEventFilter);
+        const wonEvents = await contract.queryFilter(wonEventFilter);
+        const lostEvents = await contract.queryFilter(lostEventFilter);
 
-      expect(wonEvents.length + lostEvents.length).to.equal(2);
+        expect(wonEvents.length + lostEvents.length).to.equal(2);
 
-      const balance = (await contract.balance()).toNumber();
-      expect(balance).to.equal(10 + wonEvents.length - lostEvents.length);
-    })
+        const balance = (await contract.balance()).toNumber();
+        expect(balance).to.equal(10 + wonEvents.length - lostEvents.length);
+      })
   })
 })
