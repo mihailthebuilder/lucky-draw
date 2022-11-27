@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "test": "hardhat test test/LuckyDraw.ts",
+    "test": "hardhat test test/*",
     "start-network": "hardhat node",
     "deploy:localhost": "hardhat run scripts/deploy.ts --network localhost",
     "deploy:goerli": "hardhat run scripts/deploy.ts --network goerli"
