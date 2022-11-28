@@ -65,14 +65,14 @@ describe("LuckyDraw", function () {
         then test for, not the address of the contract deployed. 
         */
         const addressUsedToDeployContract = await contract.signer.getAddress();
-        const addressUsedToExecuteTransaction = event.args[0] as string;
+        const addressUsedToExecuteTransaction = event.args.from as string;
         expect(addressUsedToExecuteTransaction).to.equal(addressUsedToDeployContract);
 
-        const transactionTimestampInSeconds = (event.args[1] as BigNumber).toNumber();
+        const transactionTimestampInSeconds = (event.args.timestamp as BigNumber).toNumber();
         const durationFromTransactionToNowInMilliseconds = Date.now() - transactionTimestampInSeconds * 1000;
         expect(durationFromTransactionToNowInMilliseconds / 60_000).to.be.lessThan(1);
 
-        const winningDraw = (event.args[2] as boolean);
+        const winningDraw = (event.args.won as boolean);
         const newBalance = (await contract.balance()).toNumber();
 
         if (winningDraw) {
@@ -81,10 +81,10 @@ describe("LuckyDraw", function () {
           expect(newBalance).to.equal(11);
         }
 
-        const oldBalance = event.args[3] as number;
+        const oldBalance = event.args.oldBalance as number;
         expect(oldBalance).to.equal(10);
 
-        const newBalanceInEvent = event.args[4] as number
+        const newBalanceInEvent = event.args.newBalance as number
         expect(newBalanceInEvent).to.equal(newBalance);
       })
 
