@@ -36,8 +36,9 @@ describe("LuckyDraw", function () {
   describe("Draw feature", function () {
     it(
       `Given starting balance of 10,
-        draw emits a "NewDraw" event
-        and reduces the balance by 1 for a "won" event or increases the balance by 1 for a "lost" event`,
+        when draw is called once
+        then a "NewDraw" event is emitted
+        and the balance is reduced by 1 for a "won" event, or increased by 1 for a "lost" event`,
       async function () {
         const { contract } = await deployContractFixture(10);
 
@@ -90,7 +91,8 @@ describe("LuckyDraw", function () {
     it(
       `Given a starting balance of 1, 
       when draw is called 2 times, 
-      the end balance is 0, 1, 2, or 3`,
+      then 1 or 2 events were emitted
+      and the end balance is 0, 1, or 3`,
       async function () {
         const { contract } = await deployContractFixture(1);
 
@@ -109,8 +111,15 @@ describe("LuckyDraw", function () {
           }
         }
 
+        const eventFilter = contract.filters["NewDraw(address,uint256,bool,uint256,uint256)"]()
+        const events = await contract.queryFilter(eventFilter)
         const balance = (await contract.balance()).toNumber();
-        expect(balance).to.be.oneOf([0, 1, 2, 3]);
+
+        if (events.length === 2) {
+          expect(balance).to.be.oneOf([1, 3])
+        } else if (events.length === 1) {
+          expect(balance).to.equal(0)
+        }
       })
   })
 })
