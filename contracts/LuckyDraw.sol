@@ -13,13 +13,27 @@ contract LuckyDraw {
     }
 
     function draw() public {
+        uint oldBalance = balance;
+
         if (isWinningCall()) {
             require(balance >= 1, "Insufficient balance in contract");
-            emit won();
             withdrawFromBalance();
+            emit NewDraw(
+                msg.sender,
+                block.timestamp,
+                true,
+                oldBalance,
+                balance
+            );
         } else {
-            emit lost();
             addToBalance();
+            emit NewDraw(
+                msg.sender,
+                block.timestamp,
+                false,
+                oldBalance,
+                balance
+            );
         }
     }
 
@@ -49,6 +63,11 @@ contract LuckyDraw {
         balance -= 1;
     }
 
-    event won();
-    event lost();
+    event NewDraw(
+        address indexed from,
+        uint256 indexed timestamp,
+        bool indexed won,
+        uint oldBalance,
+        uint newBalance
+    );
 }

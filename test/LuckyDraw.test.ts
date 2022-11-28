@@ -1,4 +1,5 @@
 import { expect } from "chai";
+import { BigNumber } from "ethers";
 import { ethers } from "hardhat";
 
 type ContractError = {
@@ -35,8 +36,8 @@ describe("LuckyDraw", function () {
   describe("Draw feature", function () {
     it(
       `Given starting balance of 10,
-      draw emits a "won" or "lost" event
-      and reduces the balance by 1 for a "won" event or increases the balance by 1 for a "lost" event`,
+        draw emits a "NewDraw" event
+        and reduces the balance by 1 for a "won" event or increases the balance by 1 for a "lost" event`,
       async function () {
         const { contract } = await deployContractFixture(10);
 
@@ -44,14 +45,46 @@ describe("LuckyDraw", function () {
         const transactionResult = await transaction.wait();
         const eventsResultingFromTransaction = transactionResult.events;
 
-        if (eventsResultingFromTransaction?.length != 1) {
+        if (!eventsResultingFromTransaction?.length) {
           throw "No events emitted"
         }
 
-        const eventName = eventsResultingFromTransaction[0].event
-        const balance = (await contract.balance()).toNumber();
+        expect(eventsResultingFromTransaction?.length).to.equal(1);
 
-        expect([balance, eventName]).to.be.deep.oneOf([[9, "won"], [11, "lost"]])
+        const event = eventsResultingFromTransaction[0];
+
+        expect(event.event).to.equal("NewDraw");
+
+        if (!event.args) {
+          throw "No arguments passed to event"
+        }
+
+        /* 
+        ideally you want to execute transaction with a custom wallet address that you 
+        then test for, not the address of the contract deployed. 
+        */
+        const addressUsedToDeployContract = await contract.signer.getAddress();
+        const addressUsedToExecuteTransaction = event.args[0] as string;
+        expect(addressUsedToExecuteTransaction).to.equal(addressUsedToDeployContract);
+
+        const transactionTimestampInSeconds = (event.args[1] as BigNumber).toNumber();
+        const durationFromTransactionToNowInMilliseconds = Date.now() - transactionTimestampInSeconds * 1000;
+        expect(durationFromTransactionToNowInMilliseconds / 60_000).to.be.lessThan(1);
+
+        const winningDraw = (event.args[2] as boolean);
+        const newBalance = (await contract.balance()).toNumber();
+
+        if (winningDraw) {
+          expect(newBalance).to.equal(9);
+        } else {
+          expect(newBalance).to.equal(11);
+        }
+
+        const oldBalance = event.args[3] as number;
+        expect(oldBalance).to.equal(10);
+
+        const newBalanceInEvent = event.args[4] as number
+        expect(newBalanceInEvent).to.equal(newBalance);
       })
 
     it("Given a starting balance of 1, when draw is called 2 times, the end balance is 0, 1, 2, or 3", async function () {
@@ -75,30 +108,5 @@ describe("LuckyDraw", function () {
       const balance = (await contract.balance()).toNumber();
       expect(balance).to.be.oneOf([0, 1, 2, 3]);
     })
-
-    it(
-      `Given a contract with a starting balance of 10,
-      when draw is called 2 times,
-      there are 2 won/lost events logged
-      and the end balance is 8, 9, 10, 11, or 12, depending on the outcome of those events`,
-      async function () {
-        const { contract } = await deployContractFixture(10);
-
-        let txn = await contract.draw();
-        await txn.wait();
-        txn = await contract.draw();
-        await txn.wait();
-
-        const wonEventFilter = contract.filters.won()
-        const lostEventFilter = contract.filters.lost()
-
-        const wonEvents = await contract.queryFilter(wonEventFilter);
-        const lostEvents = await contract.queryFilter(lostEventFilter);
-
-        expect(wonEvents.length + lostEvents.length).to.equal(2);
-
-        const balance = (await contract.balance()).toNumber();
-        expect(balance).to.equal(10 + wonEvents.length - lostEvents.length);
-      })
   })
 })
