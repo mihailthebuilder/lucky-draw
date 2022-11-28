@@ -87,26 +87,30 @@ describe("LuckyDraw", function () {
         expect(newBalanceInEvent).to.equal(newBalance);
       })
 
-    it("Given a starting balance of 1, when draw is called 2 times, the end balance is 0, 1, 2, or 3", async function () {
-      const { contract } = await deployContractFixture(1);
+    it(
+      `Given a starting balance of 1, 
+      when draw is called 2 times, 
+      the end balance is 0, 1, 2, or 3`,
+      async function () {
+        const { contract } = await deployContractFixture(1);
 
-      // balance either decreases to 0, or increases to 2
-      const txn = await contract.draw();
-      await txn.wait();
-
-      // 2nd call might be reverted if the balance is 0
-      try {
+        // balance either decreases to 0, or increases to 2
         const txn = await contract.draw();
         await txn.wait();
-      } catch (err) {
-        const errorMessage = (err as ContractError).message;
-        if (!errorMessage.includes("Insufficient balance in contract")) {
-          throw err;
-        }
-      }
 
-      const balance = (await contract.balance()).toNumber();
-      expect(balance).to.be.oneOf([0, 1, 2, 3]);
-    })
+        // 2nd call might be reverted if the balance is 0
+        try {
+          const txn = await contract.draw();
+          await txn.wait();
+        } catch (err) {
+          const errorMessage = (err as ContractError).message;
+          if (!errorMessage.includes("Insufficient balance in contract")) {
+            throw err;
+          }
+        }
+
+        const balance = (await contract.balance()).toNumber();
+        expect(balance).to.be.oneOf([0, 1, 2, 3]);
+      })
   })
 })
