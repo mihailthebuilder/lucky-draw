@@ -8,14 +8,15 @@ type ContractError = {
 }
 
 describe("LuckyDraw", function () {
-  async function deployContractFixture(initialBalance: number) {
+
+  async function deployContractFixture(initialBalance: number, prize: number) {
     const factory = await ethers.getContractFactory("LuckyDraw");
-    const contract = await factory.deploy(initialBalance);
+    const contract = await factory.deploy(ethers.utils.parseEther(prize.toString()), { value: ethers.utils.parseEther(initialBalance.toString()) });
     return { contract }
   }
 
   describe("Deployment", function () {
-    it("Can't set a balance of 0", async function () {
+
     it("Should set the balance of 10 ether and prize of 10 ether", async function () {
       const { contract } = await deployContractFixture(10, 10);
 
@@ -28,18 +29,27 @@ describe("LuckyDraw", function () {
       const prize = await contract.prize();
       expect(prize).to.equal(ethers.utils.parseEther("10"), "prize isn't 10 ether");
     })
+
+    it("Should fail to deploy if initial balance is 0", async function () {
       let errorMessage = "";
 
       try {
-        await deployContractFixture(0);
+        await deployContractFixture(0, 10);
       } catch (err) {
         errorMessage = (err as ContractError).message;
       }
 
-      expect(errorMessage.includes("Starting balance must be greater than 0")).to.be.true;
+      expect(errorMessage).to.include("Send some Ether to deploy the contract");
     })
 
-  })
+    it("Should fail to deploy if prize is 0", async function () {
+      let errorMessage = "";
+
+      try {
+        await deployContractFixture(10, 0);
+      } catch (err) {
+        errorMessage = (err as ContractError).message;
+      }
 
   describe("Draw feature", function () {
     it(
