@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { BigNumber } from "ethers";
+import { BigNumber, BigNumberish } from "ethers";
 import { ethers } from "hardhat";
 
 type ContractError = {
@@ -51,14 +51,34 @@ describe("LuckyDraw", function () {
         errorMessage = (err as ContractError).message;
       }
 
+      expect(errorMessage).to.include("Set a prize greater than 0")
+    });
+
+    it("Should fail to deploy if initial balance is less than prize", async function () {
+      let errorMessage = "";
+
+      try {
+        await deployContractFixture(5, 10);
+      } catch (err) {
+        errorMessage = (err as ContractError).message;
+      }
+
+      expect(errorMessage).to.include("Prize is greater than inital balance")
+    });
+  })
+
   describe("Draw feature", function () {
     it(
-      `Given starting balance of 10,
+      `Given starting balance of 10 ETH
+        and a prize of 0.0001 ETH
         when draw is called once
         then a "NewDraw" event is emitted
-        and the balance is reduced by 1 for a "won" event, or increased by 1 for a "lost" event`,
+        and the balance is reduced by 0.0001 ETH for a "won" event, or remains unchanged a "lost" event`,
       async function () {
-        const { contract } = await deployContractFixture(10);
+        const startingBalance = 10;
+        const prize = 0.0001;
+
+        const { contract } = await deployContractFixture(startingBalance, prize);
 
         const transaction = await contract.draw();
         const transactionResult = await transaction.wait();
@@ -91,21 +111,19 @@ describe("LuckyDraw", function () {
         expect(durationFromTransactionToNowInMilliseconds / 60_000).to.be.lessThan(1);
 
         const winningDraw = (event.args.won as boolean);
-        const newBalance = (await contract.balance()).toNumber();
+        const balanceAfterDraw = convertWeiToEther(await ethers.provider.getBalance(contract.address));
 
         if (winningDraw) {
-          expect(newBalance).to.equal(9);
+          expect(balanceAfterDraw).to.equal(startingBalance - prize, "new balance should be reduced by prize if won");
         } else {
-          expect(newBalance).to.equal(11);
+          expect(balanceAfterDraw).to.equal(startingBalance);
         }
 
-        const oldBalance = event.args.oldBalance as number;
+        const oldBalance = convertWeiToEther(event.args.oldBalance as number);
         expect(oldBalance).to.equal(10);
 
-        const newBalanceInEvent = event.args.newBalance as number
-        expect(newBalanceInEvent).to.equal(newBalance);
-      })
-
+        const newBalanceInEvent = convertWeiToEther(event.args.newBalance as number);
+        expect(newBalanceInEvent).to.equal(balanceAfterDraw, "new balance in event should match new balance");
     it(
       `Given a starting balance of 1, 
       when draw is called 2 times, 
@@ -140,16 +158,5 @@ describe("LuckyDraw", function () {
         }
       })
 
-    it("Should fail to deploy if initial balance is less than prize", async function () {
-      let errorMessage = "";
 
-      try {
-        await deployContractFixture(5, 10);
-      } catch (err) {
-        errorMessage = (err as ContractError).message;
-      }
-
-      expect(errorMessage).to.include("Prize is greater than inital balance")
-    });
-  })
-})
+const convertWeiToEther = (wei: BigNumberish) => Number(ethers.utils.formatEther(wei));

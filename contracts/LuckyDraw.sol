@@ -16,28 +16,21 @@ contract LuckyDraw {
     }
 
     function draw() public {
-        uint oldBalance = balance;
+        uint oldBalance = address(this).balance;
+        bool wonTheDraw = isWinningCall();
 
-        if (isWinningCall()) {
-            require(balance >= 1, "Insufficient balance in contract");
-            withdrawFromBalance();
-            emit NewDraw(
-                msg.sender,
-                block.timestamp,
-                true,
-                oldBalance,
-                balance
-            );
-        } else {
-            addToBalance();
-            emit NewDraw(
-                msg.sender,
-                block.timestamp,
-                false,
-                oldBalance,
-                balance
-            );
+        if (wonTheDraw) {
+            require(oldBalance >= prize, "Insufficient balance in contract");
+            awardPrize();
         }
+
+        emit NewDraw(
+            msg.sender,
+            block.timestamp,
+            wonTheDraw,
+            oldBalance,
+            address(this).balance
+        );
     }
 
     function isWinningCall() private view returns (bool) {
@@ -58,12 +51,9 @@ contract LuckyDraw {
             );
     }
 
-    function addToBalance() private {
-        balance += 1;
-    }
-
-    function withdrawFromBalance() private {
-        balance -= 1;
+    function awardPrize() private {
+        (bool success, ) = msg.sender.call{value: prize}("");
+        require(success, "Failed to send Ether");
     }
 
     event NewDraw(
