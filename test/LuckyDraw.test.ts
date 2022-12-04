@@ -124,13 +124,16 @@ describe("LuckyDraw", function () {
 
         const newBalanceInEvent = convertWeiToEther(event.args.newBalance as number);
         expect(newBalanceInEvent).to.equal(balanceAfterDraw, "new balance in event should match new balance");
+      })
+
     it(
-      `Given a starting balance of 1, 
+      `Given starting balance of 2 ETH
+      and a prize of 1.5 ETH
       when draw is called 2 times, 
       then 1 or 2 events were emitted
-      and the end balance is 0, 1, or 3`,
+      and the end balance is 0.5 or 2 ETH`,
       async function () {
-        const { contract } = await deployContractFixture(1);
+        const { contract } = await deployContractFixture(2, 1.5);
 
         // balance either decreases to 0, or increases to 2
         const txn = await contract.draw();
@@ -149,14 +152,15 @@ describe("LuckyDraw", function () {
 
         const eventFilter = contract.filters["NewDraw(address,uint256,bool,uint256,uint256)"]()
         const events = await contract.queryFilter(eventFilter)
-        const balance = (await contract.balance()).toNumber();
+        const balanceAfterDraw = convertWeiToEther(await ethers.provider.getBalance(contract.address));
 
         if (events.length === 2) {
-          expect(balance).to.be.oneOf([1, 3])
+          expect(balanceAfterDraw).to.be.oneOf([0.5, 2])
         } else if (events.length === 1) {
-          expect(balance).to.equal(0)
+          expect(balanceAfterDraw).to.equal(0.5)
         }
       })
-
+  });
+});
 
 const convertWeiToEther = (wei: BigNumberish) => Number(ethers.utils.formatEther(wei));
