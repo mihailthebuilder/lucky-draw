@@ -5,11 +5,12 @@ pragma solidity ^0.8.17;
 import "hardhat/console.sol";
 
 contract LuckyDraw {
-    uint public balance;
+    uint public prize;
 
-    constructor(uint startingBalance) {
-        require(startingBalance > 0, "Starting balance must be greater than 0");
-        balance = startingBalance;
+    constructor(uint inputPrize) payable {
+        require(msg.value > 0, "You need to send some Ether to the contract");
+        // require(startingBalance > 0, "Starting balance must be greater than 0");
+        prize = inputPrize;
     }
 
     function draw() public {

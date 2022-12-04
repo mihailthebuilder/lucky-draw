@@ -16,6 +16,18 @@ describe("LuckyDraw", function () {
 
   describe("Deployment", function () {
     it("Can't set a balance of 0", async function () {
+    it("Should set the balance of 10 ether and prize of 10 ether", async function () {
+      const { contract } = await deployContractFixture(10, 10);
+
+      const balance = await ethers.provider.getBalance(
+        contract.address
+      );
+
+      expect(balance).to.equal(ethers.utils.parseEther("10"), "initial balance isn't 10 ether");
+
+      const prize = await contract.prize();
+      expect(prize).to.equal(ethers.utils.parseEther("10"), "prize isn't 10 ether");
+    })
       let errorMessage = "";
 
       try {
@@ -27,10 +39,6 @@ describe("LuckyDraw", function () {
       expect(errorMessage.includes("Starting balance must be greater than 0")).to.be.true;
     })
 
-    it("Should set the balance of 10", async function () {
-      const { contract } = await deployContractFixture(10);
-      expect(await contract.balance()).to.equal(10);
-    })
   })
 
   describe("Draw feature", function () {
