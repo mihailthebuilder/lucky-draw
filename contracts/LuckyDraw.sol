@@ -10,6 +10,7 @@ contract LuckyDraw {
     constructor(uint inputPrize) payable {
         require(msg.value > 0, "Send some Ether to deploy the contract");
         require(inputPrize > 0, "Set a prize greater than 0");
+        require(msg.value > inputPrize, "Prize is greater than inital balance");
 
         prize = inputPrize;
     }

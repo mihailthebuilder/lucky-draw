@@ -17,8 +17,8 @@ describe("LuckyDraw", function () {
 
   describe("Deployment", function () {
 
-    it("Should set the balance of 10 ether and prize of 10 ether", async function () {
-      const { contract } = await deployContractFixture(10, 10);
+    it("Should set the balance of 10 ether and prize of 1 ether", async function () {
+      const { contract } = await deployContractFixture(10, 1);
 
       const balance = await ethers.provider.getBalance(
         contract.address
@@ -27,7 +27,7 @@ describe("LuckyDraw", function () {
       expect(balance).to.equal(ethers.utils.parseEther("10"), "initial balance isn't 10 ether");
 
       const prize = await contract.prize();
-      expect(prize).to.equal(ethers.utils.parseEther("10"), "prize isn't 10 ether");
+      expect(prize).to.equal(ethers.utils.parseEther("1"), "prize isn't 10 ether");
     })
 
     it("Should fail to deploy if initial balance is 0", async function () {
@@ -139,5 +139,17 @@ describe("LuckyDraw", function () {
           expect(balance).to.equal(0)
         }
       })
+
+    it("Should fail to deploy if initial balance is less than prize", async function () {
+      let errorMessage = "";
+
+      try {
+        await deployContractFixture(5, 10);
+      } catch (err) {
+        errorMessage = (err as ContractError).message;
+      }
+
+      expect(errorMessage).to.include("Prize is greater than inital balance")
+    });
   })
 })
